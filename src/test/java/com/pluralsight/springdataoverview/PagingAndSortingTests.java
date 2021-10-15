@@ -3,32 +3,36 @@ package com.pluralsight.springdataoverview;
 import com.pluralsight.springdataoverview.entity.Flight;
 import com.pluralsight.springdataoverview.repository.FlightRepository;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
-@RunWith(SpringRunner.class)
-@DataJpaTest
-public class PagingAndSortingTests {
+@DataMongoTest
+class PagingAndSortingTests {
     @Autowired
     private FlightRepository flightRepository;
 
-    @Before
+    @BeforeEach
     public void setUp(){
         flightRepository.deleteAll();
     }
 
+    @AfterEach
+    public void tearDown(){
+        flightRepository.deleteAll();
+    }
+
     @Test
-    public void shouldSortFlightsByDestination(){
+    void shouldSortFlightsByDestination(){
         final Flight flight1 = createFlight("Madrid");
         final Flight flight2 = createFlight("London");
         final Flight flight3 = createFlight("Saudi Arabia");
@@ -49,7 +53,7 @@ public class PagingAndSortingTests {
     }
 
     @Test
-    public void shouldSortFlightsByScheduledAndThenName(){
+    void shouldSortFlightsByScheduledAndThenName(){
         final LocalDateTime now = LocalDateTime.now();
         final Flight paris1 = createFlight("Paris",now);
         final Flight paris2 = createFlight("Paris",now.plusHours(2));
@@ -69,16 +73,16 @@ public class PagingAndSortingTests {
 
         final Iterator<Flight> iterator = flights.iterator();
 
-        Assertions.assertThat(iterator.next()).isEqualTo(paris3);
-        Assertions.assertThat(iterator.next()).isEqualTo(london2);
-        Assertions.assertThat(iterator.next()).isEqualTo(paris1);
-        Assertions.assertThat(iterator.next()).isEqualTo(london1);
-        Assertions.assertThat(iterator.next()).isEqualTo(paris2);
+        Assertions.assertThat(iterator.next()).isEqualToComparingFieldByField(paris3);
+        Assertions.assertThat(iterator.next()).isEqualToComparingFieldByField(london2);
+        Assertions.assertThat(iterator.next()).isEqualToComparingFieldByField(paris1);
+        Assertions.assertThat(iterator.next()).isEqualToComparingFieldByField(london1);
+        Assertions.assertThat(iterator.next()).isEqualToComparingFieldByField(paris2);
 
     }
 
     @Test
-    public void shouldPageResults(){
+    void shouldPageResults(){
         for(int i=0; i<50;i++){
             flightRepository.save(createFlight(String.valueOf(i)));
         }
@@ -95,7 +99,7 @@ public class PagingAndSortingTests {
     }
 
     @Test
-    public void shouldPageAndSortResults(){
+    void shouldPageAndSortResults(){
         for(int i=0; i<50;i++){
             flightRepository.save(createFlight(String.valueOf(i)));
         }
@@ -112,7 +116,7 @@ public class PagingAndSortingTests {
     }
 
     @Test
-    public void shouldPageAndSortADerivedQuery(){
+    void shouldPageAndSortADerivedQuery(){
         for(int i=0; i<10;i++){
             final Flight flight = createFlight(String.valueOf(i));
             flight.setOrigin("Paris");
@@ -143,7 +147,7 @@ public class PagingAndSortingTests {
         Flight flight = new Flight();
         flight.setDestination(destination);
         flight.setOrigin("London");
-        flight.setScheduledAt(scheduledAt);
+        flight.setScheduledAt(scheduledAt.truncatedTo(ChronoUnit.MINUTES));
         return flight;
     }
 
