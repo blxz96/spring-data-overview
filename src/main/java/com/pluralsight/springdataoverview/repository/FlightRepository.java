@@ -20,4 +20,7 @@ public interface FlightRepository extends PagingAndSortingRepository<Flight,Stri
     List<Flight> findByOriginIgnoreCase(String origin);
 
     Page<Flight> findByOrigin(String origin, Pageable pageRequest);
+
+
+    List<Flight> deleteByOrigin(String london);
 }
